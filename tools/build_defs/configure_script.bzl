@@ -196,6 +196,7 @@ _CONFIGURE_TOOLS = {
     # missing: cxx_linker_executable
 }
 
+# TODO docstring
 def get_configure_variables(tools, flags, user_env_vars):
     vars = {}
 

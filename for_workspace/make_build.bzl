@@ -7,7 +7,9 @@ load(
     "//tools/build_defs:cc_toolchain_util.bzl",
     "get_flags_info",
     "get_tools_info",
+    "absolutize_path_in_str"
 )
+
 
 #def _get_configure_variables(tools, flags, user_env_vars):
 
@@ -18,13 +20,18 @@ def _make_tool(ctx):
     flags = get_flags_info(ctx)
     env_vars_string = get_configure_variables(tools, flags, [])
 
+    env_vars_string_fmt = " ".join(["{}=\"{}\""
+        .format(key, _join_flags_list(ctx.workspace_name, env_vars_string[key])) for key in env_vars_string])
+
+    print("env_vars_string is ", env_vars_string_fmt)
+
     make = ctx.actions.declare_directory("make")
     script = [
         "export BUILD_DIR=##pwd##",
         "export BUILD_TMPDIR=$${BUILD_DIR}$$.build_tmpdir",
         "##copy_dir_contents_to_dir## ./{} $BUILD_TMPDIR".format(root),
         "cd $$BUILD_TMPDIR$$",
-        "./configure --prefix=$$BUILD_DIR$$/{}".format(make.path),
+        "./configure --prefix=$$BUILD_DIR$$/{} {}".format(make.path, env_vars_string_fmt),
         "./build.sh",
         "./make install",
     ]
@@ -70,3 +77,10 @@ make_tool = rule(
         "@bazel_tools//tools/cpp:toolchain_type",
     ],
 )
+
+# TODO copied below from configure_script.bazl
+def _absolutize(workspace_name, text):
+    return absolutize_path_in_str(workspace_name, "$$EXT_BUILD_ROOT$$/", text)
+
+def _join_flags_list(workspace_name, flags):
+    return " ".join([_absolutize(workspace_name, flag) for flag in flags])
