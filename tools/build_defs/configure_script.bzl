@@ -110,7 +110,7 @@ def get_env_vars(
         user_vars,
         deps,
         inputs):
-    vars = _get_configure_variables(tools, flags, user_vars)
+    vars = get_configure_variables(tools, flags, user_vars)
     deps_flags = _define_deps_flags(deps, inputs)
 
     if "LDFLAGS" in vars.keys():
@@ -196,7 +196,7 @@ _CONFIGURE_TOOLS = {
     # missing: cxx_linker_executable
 }
 
-def _get_configure_variables(tools, flags, user_env_vars):
+def get_configure_variables(tools, flags, user_env_vars):
     vars = {}
 
     for flag in _CONFIGURE_FLAGS:

@@ -2,9 +2,21 @@
 
 load("@rules_foreign_cc//tools/build_defs:shell_script_helper.bzl", "convert_shell_script")
 load("//tools/build_defs:detect_root.bzl", "detect_root")
+load("//tools/build_defs:configure_script.bzl", "get_configure_variables")
+load(
+    "//tools/build_defs:cc_toolchain_util.bzl",
+    "get_flags_info",
+    "get_tools_info",
+)
+
+#def _get_configure_variables(tools, flags, user_env_vars):
+
 
 def _make_tool(ctx):
     root = detect_root(ctx.attr.make_srcs)
+    tools = get_tools_info(ctx)
+    flags = get_flags_info(ctx)
+    env_vars_string = get_configure_variables(tools, flags, [])
 
     make = ctx.actions.declare_directory("make")
     script = [
@@ -37,11 +49,24 @@ make_tool = rule(
             doc = "target with the Make sources",
             mandatory = True,
         ),
+        # we need to declare this attribute to access cc_toolchain
+        "_cc_toolchain": attr.label(
+            default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
+        ),
+        "deps": attr.label_list(
+            doc = (
+                "Dummy"
+            ),
+            mandatory = False,
+            allow_files = True,
+            default = [],
+        ),
     },
     fragments = ["cpp"],
     output_to_genfiles = True,
     implementation = _make_tool,
     toolchains = [
         "@rules_foreign_cc//tools/build_defs/shell_toolchain/toolchains:shell_commands",
+        "@bazel_tools//tools/cpp:toolchain_type",
     ],
 )
