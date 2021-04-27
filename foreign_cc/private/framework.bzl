@@ -372,6 +372,9 @@ def cc_external_rule_impl(ctx, attrs):
     if "requires-network" in ctx.attr.tags:
         execution_requirements = {"requires-network": ""}
 
+    if "local" in ctx.attr.tags:
+        execution_requirements["local"] = ""
+
     # The use of `run_shell` here is intended to ensure bash is correctly setup on windows
     # environments. This should not be replaced with `run` until a cross platform implementation
     # is found that guarantees bash exists or appropriately errors out.
