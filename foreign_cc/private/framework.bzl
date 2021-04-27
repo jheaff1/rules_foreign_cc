@@ -134,6 +134,10 @@ CC_EXTERNAL_RULE_ATTRIBUTES = {
         doc = "Optional names of the resulting binaries.",
         mandatory = False,
     ),
+    "out_data_dirs": attr.string_list(
+        doc = "Optional names of additional directories created by the build that should be declared as bazel action outputs",
+        mandatory = False,
+    ),
     "out_headers_only": attr.bool(
         doc = "Flag variable to indicate that the library produces only headers",
         mandatory = False,
@@ -614,6 +618,7 @@ def _define_outputs(ctx, attrs, lib_name):
     attr_binaries_libs = []
     attr_headers_only = attrs.out_headers_only
     attr_interface_libs = []
+    attr_out_data_dirs = []
     attr_shared_libs = []
     attr_static_libs = []
 
@@ -621,6 +626,7 @@ def _define_outputs(ctx, attrs, lib_name):
     # create a mutatable list so we can ensure they're being included
     attr_binaries_libs.extend(getattr(attrs, "out_binaries", []))
     attr_interface_libs.extend(getattr(attrs, "out_interface_libs", []))
+    attr_out_data_dirs.extend(getattr(attrs, "out_data_dirs", []))
     attr_shared_libs.extend(getattr(attrs, "out_shared_libs", []))
     attr_static_libs.extend(getattr(attrs, "out_static_libs", []))
 
@@ -657,6 +663,10 @@ def _define_outputs(ctx, attrs, lib_name):
 
     out_include_dir = ctx.actions.declare_directory(lib_name + "/" + attrs.out_include_dir)
 
+    out_data_dirs = []
+    for dir in attr_out_data_dirs:
+        out_data_dirs.append(ctx.actions.declare_directory(lib_name + "/" + dir))
+
     out_binary_files = _declare_out(ctx, lib_name, attrs.out_bin_dir, attr_binaries_libs)
 
     libraries = LibrariesToLinkInfo(
@@ -665,7 +675,7 @@ def _define_outputs(ctx, attrs, lib_name):
         interface_libraries = _declare_out(ctx, lib_name, attrs.out_lib_dir, attr_interface_libs),
     )
 
-    declared_outputs = [out_include_dir] + out_binary_files
+    declared_outputs = [out_include_dir] + out_data_dirs + out_binary_files
     declared_outputs += libraries.static_libraries
     declared_outputs += libraries.shared_libraries + libraries.interface_libraries
 
