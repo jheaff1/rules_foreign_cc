@@ -1,0 +1,35 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
+
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+)
+
+configure_make(
+    name = "subversion",
+    configure_env_vars = {
+        "CFLAGS": "-Dredacted='\\\"redacted\\\"'",
+        "CXXFLAGS": "-Dredacted='\\\"redacted\\\"'",
+    },
+    configure_options = [
+        "--enable-all-static",
+        "--without-boost",
+        "--with-apr=$EXT_BUILD_DEPS/apr",
+        "--with-apr-util=$EXT_BUILD_DEPS/apr_util",
+        "--with-zlib=$EXT_BUILD_DEPS/zlib",
+        "--with-lz4=internal",
+        "--with-utf8proc=internal",
+    ],
+    lib_source = ":all_srcs",
+    out_binaries = [
+        "svn",
+        "svnversion",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@apr",
+        "@apr_util",
+        "@sqlite",
+        "@zlib",
+    ],
+)
