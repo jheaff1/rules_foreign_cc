@@ -13,10 +13,12 @@ load("//libpng:libpng_repositories.bzl", "libpng_repositories")
 load("//libssh2:libssh2_repositories.bzl", "libssh2_repositories")
 load("//openssl:openssl_repositories.bzl", "openssl_repositories")
 load("//pcre:pcre_repositories.bzl", "pcre_repositories")
+load("//python:python_repositories.bzl", "python_repositories")
 load("//sqlite:sqlite_repositories.bzl", "sqlite_repositories")
 load("//subversion:subversion_repositories.bzl", "subversion_repositories")
 load("//zlib:zlib_repositories.bzl", "zlib_repositories")
 
+# buildifier: disable=unnamed-macro
 def repositories():
     """Load all repositories needed for the targets of rules_foreign_cc_examples_third_party"""
     apr_repositories()
@@ -31,6 +33,7 @@ def repositories():
     libssh2_repositories()
     openssl_repositories()
     pcre_repositories()
+    python_repositories()
     sqlite_repositories()
     subversion_repositories()
     zlib_repositories()

@@ -15,6 +15,7 @@ test_suite(
         "//libssh2:libssh2_build_test",
         "//openssl:openssl_build_test",
         "//pcre:pcre_build_test",
+        "//python:python_tests",
         "//sqlite:sqlite_build_test",
         "//subversion:subversion_build_test",
     ],
@@ -37,6 +38,7 @@ test_suite(
         "//libssh2:libssh2_build_test",
         "//openssl:openssl_build_test",
         "//pcre:pcre_build_test",
+        "//python:python_tests",
         # Missing a new enough aclocal to build
         #"//sqlite:sqlite_build_test",
         #"//subversion:subversion_build_test",
@@ -59,6 +61,8 @@ test_suite(
         "//libssh2:libssh2_build_test",
         "//openssl:openssl_build_test",
         "//pcre:pcre_build_test",
+        # python depends on subversion, which fails as described below
+        #"//python:python_tests",
         "//sqlite:sqlite_build_test",
         # subversion depends on apr_util, which fails as described above
         #"//subversion:subversion_build_test",
