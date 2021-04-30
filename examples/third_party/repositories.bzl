@@ -1,6 +1,8 @@
 # buildifier: disable=module-docstring
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("//apr:apr_repositories.bzl", "apr_repositories")
+load("//apr_util:apr_util_repositories.bzl", "apr_util_repositories")
 load("//bison:bison_repositories.bzl", "bison_repositories")
 load("//cares:cares_repositories.bzl", "cares_repositories")
 load("//curl:curl_repositories.bzl", "curl_repositories")
@@ -15,7 +17,8 @@ load("//zlib:zlib_repositories.bzl", "zlib_repositories")
 
 def repositories():
     """Load all repositories needed for the targets of rules_foreign_cc_examples_third_party"""
-
+    apr_repositories()
+    apr_util_repositories()
     bison_repositories()
     cares_repositories()
     curl_repositories()

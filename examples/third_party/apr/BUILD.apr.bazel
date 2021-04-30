@@ -1,0 +1,14 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
+
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+)
+
+configure_make(
+    name = "apr",
+    configure_in_place = True,
+    lib_source = ":all_srcs",
+    out_static_libs = ["libapr-1.a"],
+    visibility = ["//visibility:public"],
+)
