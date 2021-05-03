@@ -1,6 +1,6 @@
 index 5f5d558010..c26610d749 100755
---- apr/configure
-+++ apr/configure
+--- configure
++++ configure
 @@ -24475,7 +24475,7 @@ else
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
  /* end confdefs.h.  */
