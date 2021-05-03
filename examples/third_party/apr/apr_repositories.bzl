@@ -8,10 +8,11 @@ def apr_repositories():
         http_archive,
         name = "apr",
         build_file = Label("//apr:BUILD.apr.bazel"),
-        sha256 = "70dcf9102066a2ff2ffc47e93c289c8e54c95d8dda23b503f9e61bb0cbd2d105",
-        strip_prefix = "apr-1.6.5",
+        # Apply patch from https://bz.apache.org/bugzilla/show_bug.cgi?id=64753
+        patches = [Label("//apr:macos.patch")],
+        sha256 = "48e9dbf45ae3fdc7b491259ffb6ccf7d63049ffacbc1c0977cced095e4c2d5a2",
+        strip_prefix = "apr-1.7.0",
         urls = [
-            "https://mirror.bazel.build/www-eu.apache.org/dist//apr/apr-1.6.5.tar.gz",
-            "https://www-eu.apache.org/dist//apr/apr-1.6.5.tar.gz",
+            "https://www-eu.apache.org/dist//apr/apr-1.7.0.tar.gz",
         ],
     )
