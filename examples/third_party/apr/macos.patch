@@ -1,12 +1,98 @@
-diff -ruN configure.in configure.in
---- configure.in	2019-04-01 19:40:46.000000000 +0200
---- configure.in	2019-04-01 19:40:46.000000000 +0200
-@@ -1809,7 +1809,7 @@
- elif test "$ac_cv_sizeof_pid_t" = "$ac_cv_sizeof_long_long"; then
-     pid_t_fmt='#define APR_PID_T_FMT APR_INT64_T_FMT'
- else
--    pid_t_fmt='#error Can not determine the proper size for pid_t'
-+    pid_t_fmt='#define APR_PID_T_FMT "d"'
- fi
- 
- # Basically, we have tried to figure out the correct format strings
+index 5f5d558010..c26610d749 100755
+--- apr/configure
++++ apr/configure
+@@ -24475,7 +24475,7 @@ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ #include <stdio.h>
+-#include <stdlib.h>
++$ac_includes_default
+ #include <sys/types.h>
+ #ifdef WIN32
+ #define binmode "b"
+@@ -24486,7 +24486,7 @@ main()
+ {
+   FILE *f=fopen("conftestval", "w" binmode);
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(pid_t));
++  fprintf(f, "%zd\n", sizeof(pid_t));
+   exit(0);
+ }
+ _ACEOF
+@@ -24801,6 +24801,7 @@ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ #include <stdio.h>
++$ac_includes_default
+ #include <sys/types.h>
+ #ifdef WIN32
+ #define binmode "b"
+@@ -24811,7 +24812,7 @@ main()
+ {
+   FILE *f=fopen("conftestval", "w" binmode);
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(ssize_t));
++  fprintf(f, "%zd\n", sizeof(ssize_t));
+   exit(0);
+ }
+ _ACEOF
+@@ -24864,6 +24865,7 @@ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ #include <stdio.h>
++$ac_includes_default
+ #include <stddef.h>
+ #ifdef WIN32
+ #define binmode "b"
+@@ -24874,7 +24876,7 @@ main()
+ {
+   FILE *f=fopen("conftestval", "w" binmode);
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(size_t));
++  fprintf(f, "%zd\n", sizeof(size_t));
+   exit(0);
+ }
+ _ACEOF
+@@ -24928,6 +24930,7 @@ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ #include <stdio.h>
++$ac_includes_default
+ #include <sys/types.h>
+ #ifdef WIN32
+ #define binmode "b"
+@@ -24938,7 +24941,7 @@ main()
+ {
+   FILE *f=fopen("conftestval", "w" binmode);
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(off_t));
++  fprintf(f, "%zd\n", sizeof(off_t));
+   exit(0);
+ }
+ _ACEOF
+@@ -25309,7 +25312,7 @@ main()
+ {
+   FILE *f=fopen("conftestval", "w" binmode);
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(ino_t));
++  fprintf(f, "%zd\n", sizeof(ino_t));
+   exit(0);
+ }
+ _ACEOF
+@@ -25585,6 +25588,7 @@ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ #include <stdio.h>
++$ac_includes_default
+ #include <sys/types.h>
+ #include <sys/uio.h>
+ #ifdef WIN32
+@@ -25596,7 +25600,7 @@ main()
+ {
+   FILE *f=fopen("conftestval", "w" binmode);
+   if (!f) exit(1);
+-  fprintf(f, "%d\n", sizeof(struct iovec));
++  fprintf(f, "%zd\n", sizeof(struct iovec));
+   exit(0);
+ }
+ _ACEOF
