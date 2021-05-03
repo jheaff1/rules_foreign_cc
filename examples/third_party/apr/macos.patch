@@ -1,4 +1,4 @@
-diff -ruN configure configure
+diff -ruN configure.in configure
 --- configure 2021-05-03 13:54:54.280000000 +0100
 +++ configure 2021-05-03 13:54:54.280000000 +0100
  @@ -24517,7 +24517,7 @@
@@ -10,3 +10,4 @@ diff -ruN configure configure
  fi
  
  # Basically, we have tried to figure out the correct format strings
+ 
