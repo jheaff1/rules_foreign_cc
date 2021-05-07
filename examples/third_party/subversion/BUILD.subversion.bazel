@@ -5,12 +5,17 @@ filegroup(
     srcs = glob(["**"]),
 )
 
+CONFIGURE_ENV_VARS = {
+    "CFLAGS": "-Dredacted='\\\"redacted\\\"'",
+    "CXXFLAGS": "-Dredacted='\\\"redacted\\\"'",
+}
+
 configure_make(
     name = "subversion",
-    configure_env_vars = {
-        "CFLAGS": "-Dredacted='\\\"redacted\\\"'",
-        "CXXFLAGS": "-Dredacted='\\\"redacted\\\"'",
-    },
+    configure_env_vars = select({
+        "@platforms//os:macos": dict(CONFIGURE_ENV_VARS).update({"AR": ""}),
+        "//conditions:default": CONFIGURE_ENV_VARS,
+    }),
     configure_options = [
         "--enable-all-static",
         "--without-boost",
