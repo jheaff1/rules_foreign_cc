@@ -17,6 +17,7 @@ configure_make(
         "--with-openssl=$EXT_BUILD_DEPS/openssl",
         "--with-zlib=$EXT_BUILD_DEPS/zlib",
     ],
+    env = {"CFLAGS": "-Dredacted='\\\"redacted\\\"'"},
     # rules_foreign_cc defaults the install_prefix to "python". This conflicts with the "python" executable that is generated.
     install_prefix = "py_install",
     lib_source = ":all_srcs",
