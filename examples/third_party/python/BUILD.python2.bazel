@@ -38,6 +38,10 @@ configure_make(
         "@openssl",
         "@zlib",
     ],
+    features = select({
+        "@platforms//os:macos": ["-headerpad"],
+        "//conditions:default": {},
+    }),
 )
 
 filegroup(
