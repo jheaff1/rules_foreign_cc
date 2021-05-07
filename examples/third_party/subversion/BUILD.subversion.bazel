@@ -13,7 +13,7 @@ CONFIGURE_ENV_VARS = {
 configure_make(
     name = "subversion",
     configure_env_vars = select({
-        "@platforms//os:macos": dict(CONFIGURE_ENV_VARS).update({"AR": ""}),
+        "@platforms//os:macos": {}.update({"AR": ""}).update(CONFIGURE_ENV_VARS),
         "//conditions:default": CONFIGURE_ENV_VARS,
     }),
     configure_options = [
