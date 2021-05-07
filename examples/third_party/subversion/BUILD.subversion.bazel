@@ -1,4 +1,5 @@
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 filegroup(
     name = "all_srcs",
@@ -13,7 +14,7 @@ CONFIGURE_ENV_VARS = {
 configure_make(
     name = "subversion",
     configure_env_vars = select({
-        "@platforms//os:macos": {}.update({"AR": ""}).update(CONFIGURE_ENV_VARS),
+        "@platforms//os:macos": dicts.add({"AR": ""}, CONFIGURE_ENV_VARS),
         "//conditions:default": CONFIGURE_ENV_VARS,
     }),
     configure_options = [
