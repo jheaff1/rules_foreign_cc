@@ -13,6 +13,7 @@ configure_make(
         "@platforms//os:macos": {"AR": ""},
         "//conditions:default": {},
     }),
+    configure_in_place = True,
     configure_options = [
         "--with-openssl=$EXT_BUILD_DEPS/openssl",
         "--with-zlib=$EXT_BUILD_DEPS/zlib",
