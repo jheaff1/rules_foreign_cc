@@ -16,13 +16,14 @@ configure_make(
     configure_options = [
         "--with-openssl=$EXT_BUILD_DEPS/openssl",
         "--with-zlib=$EXT_BUILD_DEPS/zlib",
+        "--enable-optimizations",
     ],
     env = {"CFLAGS": "-Dredacted='\\\"redacted\\\"'"},
     # rules_foreign_cc defaults the install_prefix to "python". This conflicts with the "python" executable that is generated.
     install_prefix = "py_install",
     lib_source = ":all_srcs",
     out_binaries = [
-        "python3",
+        "python3.9",
     ],
     out_data_dirs = ["lib"],
     deps = [
@@ -38,5 +39,5 @@ configure_make(
 filegroup(
     name = "python3_bin",
     srcs = [":python3"],
-    output_group = "python3",
+    output_group = "python3.9",
 )

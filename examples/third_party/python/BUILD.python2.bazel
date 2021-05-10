@@ -22,12 +22,13 @@ configure_make(
     configure_options = [
         "--with-openssl=$EXT_BUILD_DEPS/openssl",
         "--with-zlib=$EXT_BUILD_DEPS/zlib",
+        "--enable-optimizations",
     ],
     # rules_foreign_cc defaults the install_prefix to "python". This conflicts with the "python" executable that is generated.
     install_prefix = "py_install",
     lib_source = ":all_srcs",
     out_binaries = [
-        "python2",
+        "python2.7",
     ],
     out_data_dirs = ["lib"],
     tools_deps = select({
@@ -47,5 +48,5 @@ configure_make(
 filegroup(
     name = "python2_bin",
     srcs = [":python2"],
-    output_group = "python2",
+    output_group = "python2.7",
 )
