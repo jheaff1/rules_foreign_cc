@@ -2,8 +2,6 @@
 
 load(":commands.bzl", "FunctionAndCallInfo")
 
-_REPLACE_VALUE = "\\${EXT_BUILD_DEPS}"
-
 def shebang():
     return "#!/usr/bin/env bash"
 
@@ -201,13 +199,27 @@ fi""".format(dir_ = dir_)
 def define_absolute_paths(dir_, abs_path):
     return "##replace_in_files## {dir_} {REPLACE_VALUE} {abs_path}".format(
         dir_ = dir_,
-        REPLACE_VALUE = _REPLACE_VALUE,
+        REPLACE_VALUE = "\\${EXT_BUILD_DEPS}",
         abs_path = abs_path,
     )
 
 def replace_absolute_paths(dir_, abs_path):
     return "##replace_in_files## {dir_} {abs_path} {REPLACE_VALUE}".format(
         dir_ = dir_,
-        REPLACE_VALUE = _REPLACE_VALUE,
+        REPLACE_VALUE = "\\${EXT_BUILD_DEPS}",
+        abs_path = abs_path,
+    )
+
+def define_sandbox_paths(dir_, abs_path):
+    return "##replace_in_files## {dir_} {REPLACE_VALUE} {abs_path}".format(
+        dir_ = dir_,
+        REPLACE_VALUE = "\\${EXT_BUILD_ROOT}",
+        abs_path = abs_path,
+    )
+
+def replace_sandbox_paths(dir_, abs_path):
+    return "##replace_in_files## {dir_} {abs_path} {REPLACE_VALUE}".format(
+        dir_ = dir_,
+        REPLACE_VALUE = "\\${EXT_BUILD_ROOT}",
         abs_path = abs_path,
     )
