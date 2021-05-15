@@ -69,9 +69,11 @@ if [ -d "$1" ]; then
   local files=$(find -P $1 \\( -type f -and \\( -name "*.pc" -or -name "*.la" -or -name "*-config" -or -name "*.mk" -or -name "*.cmake" \\) \\))
   IFS=$SAVEIFS
   for file in ${files[@]}; do
-    sed -i 's@'"$2"'@'"$3"'@g' "${file}"
-    if [[ "$?" -ne "0" ]]; then
-      exit 1
+    if [[ -f "${file}" ]]; then
+      chmod +w $(dirname "${file}") && sed -i 's@'"$2"'@'"$3"'@g' "${file}"
+      if [[ "$?" -ne "0" ]]; then
+        exit 1
+      fi
     fi
   done
 fi
