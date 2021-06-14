@@ -8,6 +8,24 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
+sh_binary(
+    name = "python3_wrapper",
+    srcs = ["python3_wrapper.sh"],
+    data = ["@python3//:install_dir"],
+)
+
+filegroup(
+    name = "python3_wrapper2",
+    srcs = [":python3_wrapper"],
+)
+
+genrule(
+    name = "blob",
+    srcs = [":python3_wrapper2"],
+    outs = ["blob2"],
+    cmd = "ls $(locations :python3_wrapper2)"
+)
+
 py_runtime(
     name = "py2_runtime",
     files = ["@python2"],
@@ -17,8 +35,8 @@ py_runtime(
 
 py_runtime(
     name = "py3_runtime",
-    files = ["@python3"],
-    interpreter = "@python3//:python3_bin",
+    files = ["@python3//:install_dir"],
+    interpreter = "python3_wrapper.sh",
     python_version = "PY3",
 )
 
