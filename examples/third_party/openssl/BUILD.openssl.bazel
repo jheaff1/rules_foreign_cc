@@ -17,9 +17,10 @@ CONFIGURE_OPTIONS = [
     "no-weak-ssl-ciphers",
 ]
 
+##TODO handle MSVC and mingw
 configure_make(
     name = "openssl",
-    configure_command = "config",
+    configure_command = "perl Configure VC-WIN64A", # or instead use configure_prefix = "perl " and configure_command is "Configure"
     configure_in_place = True,
     configure_options = select({
         "@platforms//os:macos": [
@@ -45,6 +46,10 @@ configure_make(
         "build_libs",
         "install_dev",
     ],
+    build_data = [
+        "@perl_win//:perl"
+    ],
+    tool_prefix = "n",
     visibility = ["//visibility:public"],
 )
 
