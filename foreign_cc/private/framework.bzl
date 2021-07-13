@@ -908,6 +908,7 @@ def expand_locations(ctx, environ, data):
         dict: An expanded dict of environment variables
     """
     expanded_env = dict()
+    print("environ is ", environ)
     for key, value in environ.items():
         # If `EXT_BUILD_ROOT` exists in the string, we assume the user has added it themselves
         if "EXT_BUILD_ROOT" in value:

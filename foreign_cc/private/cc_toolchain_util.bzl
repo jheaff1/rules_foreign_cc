@@ -1,6 +1,7 @@
 """ Defines create_linking_info, which wraps passed libraries into CcLinkingInfo
 """
 
+#load("@io_bazel//src/main/res:win_res.bzl", "windows_resources")
 load("@bazel_skylib//lib:collections.bzl", "collections")
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")

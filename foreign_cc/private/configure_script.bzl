@@ -38,7 +38,11 @@ def create_configure_script(
         root_path = "$$BUILD_TMPDIR$$"
         configure_path = "{}/{}".format(root_path, configure_command)
 
-    script.append("##export_var## MAKE {}".format(make_path))
+    #script.append("##export_var## MAKE {}".format(make_path))
+    # can we get this from the cc toolchain info? see PR 8907 in bazel repo. copy src/main/res/winsdk_configure.bzl, with licence at top and say it is from main bazel repo.
+    # see example usage at top of winsdk_configure.bzl. in third party WORKSPACE, call register_local_rc_exe toolchains, then add the local rc toolchain to the "toolchains" attr of openssl
+    # then set the RC env var to the path of the RC toolchain
+    script.append("##export_var## RC \"/c/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x64/rc.exe\"") 
     script.append("##enable_tracing##")
 
     if autogen:
@@ -70,7 +74,10 @@ def create_configure_script(
             options = " ".join(autoreconf_options),
         ).lstrip())
 
-    script.append("{env_vars} {prefix}\"{configure}\" --prefix=$$BUILD_TMPDIR$$/$$INSTALL_PREFIX$$ {user_options}".format(
+    # putting env vars after seemed to resolve msys path mangling when running perl.
+    # Other things to try are changing "/" options like "/nologo" to "//nologo" or "-nologo"
+    # See https://msys2.org/wiki/Porting/, which links to a github repo https://github.com/Alexpux/path_convert, raise issue when using strawberry perl.
+    script.append("{prefix}\"{configure}\" --prefix=$$BUILD_TMPDIR$$/$$INSTALL_PREFIX$$ {env_vars} {user_options}".format(
         env_vars = _get_env_vars(workspace_name, tools, flags, env_vars, deps, inputs),
         prefix = configure_prefix,
         configure = configure_path,
@@ -173,11 +180,12 @@ _CONFIGURE_TOOLS = {
     "AR": "cxx_linker_static",
     "CC": "cc",
     "CXX": "cxx",
-    # missing: cxx_linker_executable
+    "LD": "cxx_linker_executable",
 }
 
 def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
     vars = {}
+    print("tools are ", tools)
 
     for flag in _CONFIGURE_FLAGS:
         flag_value = getattr(flags, _CONFIGURE_FLAGS[flag])
@@ -197,7 +205,8 @@ def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
             # Force absolutize of tool paths, which may relative to the workspace
             # dir (hermetic toolchains) be provided in project repositories
             # (i.e hermetic toolchains).
-            tools_dict[tool] = [_absolutize(workspace_name, tool_value, True)]
+            tools_dict[tool] = [tool_value]
+            #tools_dict[tool] = [_absolutize(workspace_name, tool_value, True)]
 
     # Replace tools paths if user passed other values
     for user_var in user_env_vars:
@@ -212,6 +221,7 @@ def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
         if not vars.get(user_var):
             vars[user_var] = [user_env_vars[user_var]]
 
+    print("vars are  ", vars)
     return vars
 
 def _absolutize(workspace_name, text, force = False):
