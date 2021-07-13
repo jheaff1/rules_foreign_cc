@@ -1,6 +1,7 @@
 """ Defines create_linking_info, which wraps passed libraries into CcLinkingInfo
 """
 
+#load("@io_bazel//src/main/res:win_res.bzl", "windows_resources")
 load("@bazel_skylib//lib:collections.bzl", "collections")
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
@@ -409,6 +410,7 @@ def absolutize_path_in_str(workspace_name, root_str, text, force = False):
 
     # absolutize relative by adding our working directory
     # this works because we ru on windows under msys now
+    ## TODO also check it doesn't start with C:, or D: or whatevver, check text[1] is not :
     if force and new_text == text and not text.startswith("/"):
         new_text = root_str + "/" + text
 

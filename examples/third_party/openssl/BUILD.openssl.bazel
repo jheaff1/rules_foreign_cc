@@ -20,36 +20,27 @@ CONFIGURE_OPTIONS = [
 ##TODO handle MSVC and mingw
 configure_make(
     name = "openssl",
-    configure_command = "perl Configure VC-WIN64A", # or instead use configure_prefix = "perl " and configure_command is "Configure"
+    configure_prefix = "perl.exe ",
+    configure_command = "Configure", # or instead use configure_prefix = "perl " and configure_command is "Configure"
     configure_in_place = True,
-    configure_options = select({
-        "@platforms//os:macos": [
-            "ARFLAGS=r",
-            "no-afalgeng",
-            "no-asm",
-            "no-shared",
-        ] + CONFIGURE_OPTIONS,
-        "//conditions:default": [
-            "no-shared",
-        ] + CONFIGURE_OPTIONS,
-    }),
+    configure_options = ["VC-WIN64A"],
     env = select({
         "@platforms//os:macos": {"AR": ""},
-        "//conditions:default": {},
+        "//conditions:default": {"PATH" : "$(dirname $(execpath @perl//:perl)):$(dirname $(execpath @nasm//:nasm)):$PATH"},
     }),
     lib_source = ":all_srcs",
     out_static_libs = [
-        "libcrypto.a",
-        "libssl.a",
+        "libcrypto.lib",
+        "libssl.lib",
     ],
     targets = [
         "build_libs",
         "install_dev",
     ],
     build_data = [
-        "@perl_win//:perl"
+        "@nasm//:nasm",
+        "@perl//:perl"
     ],
-    tool_prefix = "n",
     visibility = ["//visibility:public"],
 )
 

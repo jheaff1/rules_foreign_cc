@@ -1,7 +1,8 @@
 """A rule for building projects using the [Configure+Make](https://www.gnu.org/prep/standards/html_node/Configuration.html)
 build tool
 """
-
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 load(
     "//foreign_cc/private:cc_toolchain_util.bzl",
     "get_flags_info",
@@ -20,6 +21,8 @@ load(
 )
 load("//foreign_cc/private/framework:platform.bzl", "os_name")
 load("//toolchains/native_tools:tool_access.bzl", "get_make_data")
+
+
 
 def _configure_make(ctx):
     make_data = get_make_data(ctx)
@@ -74,16 +77,31 @@ def _create_configure_script(configureParameters):
     ])
 
     user_env = expand_locations(ctx, ctx.attr.env, data)
+    print("user_env is ", user_env)
 
     make_commands = []
     prefix = "{} ".format(ctx.expand_location(attrs.tool_prefix, data)) if attrs.tool_prefix else ""
     configure_prefix = "{} ".format(ctx.expand_location(ctx.attr.configure_prefix, data)) if ctx.attr.configure_prefix else ""
 
+    cc_toolchain = find_cpp_toolchain(ctx)
+
+    path_prepend_cmd = ""
+    if "win" in os_name(ctx):
+        # Prepend PATH environment variable with the path to the toolchain linker, which prevents MSYS using its linker (/usr/bin/link.exe) rather than the MSVC linker (both are named "link.exe")
+        compiler_path = paths.dirname(cc_toolchain.compiler_executable)
+
+        # Change prefix of linker path from Windows style to Unix style, required by MSYS. E.g. change "C:" to "/c"
+        if compiler_path[0].isalpha() and compiler_path[1] == ":":
+            compiler_path = "\"" +  compiler_path.replace(compiler_path[0:2], "/" + compiler_path[0].lower()) + "\""
+
+        # MSYS requires pahts containing whitespace to be wrapped in quotation marks
+        #path_prepend_cmd = "export PATH=\"" + linker_path + "\":$PATH"    
+
     for target in ctx.attr.targets:
         # Configure will have generated sources into `$BUILD_TMPDIR` so make sure we `cd` there
-        make_commands.append("{prefix}{make} -C $$BUILD_TMPDIR$$ {target} {args}".format(
+        make_commands.append("{prefix}{make} -f $$BUILD_TMPDIR$$/Makefile {target} {args}".format(
             prefix = prefix,
-            make = attrs.make_path,
+            make = compiler_path + "/nmake.exe",
             args = args,
             target = target,
         ))
