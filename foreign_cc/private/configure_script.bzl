@@ -169,7 +169,7 @@ def _define_deps_flags(deps, inputs):
 # See https://www.gnu.org/software/make/manual/html_node/Implicit-Variables.html
 _CONFIGURE_FLAGS = {
     "ARFLAGS": "cxx_linker_static",
-   # "ASFLAGS": "assemble",
+    "ASFLAGS": "assemble",
     "CFLAGS": "cc",
     "CXXFLAGS": "cxx",
     "LDFLAGS": "cxx_linker_executable",
@@ -177,7 +177,7 @@ _CONFIGURE_FLAGS = {
 }
 
 _CONFIGURE_TOOLS = {
-    "AS": "assemble",
+   # "AS": "assemble",
     "AR": "cxx_linker_static",
     "CC": "cc",
     "CXX": "cxx",

@@ -23,7 +23,7 @@ configure_make(
     configure_prefix = "perl.exe ",
     configure_command = "Configure", # or instead use configure_prefix = "perl " and configure_command is "Configure"
     configure_in_place = True,
-    configure_options = ["VC-WIN64A", "no-shared", "no-comp", "no-idea", "no-weak-ssl-ciphers", "ASFLAGS=\"\""],
+    configure_options = ["VC-WIN64A", "no-shared", "no-comp", "no-idea", "no-weak-ssl-ciphers", "ASFLAGS=\" \""],
     # rather than adding to path, try setting PERL and NASM variables
     # set the AS variable to the path of nasm
     env = select({
