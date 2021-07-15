@@ -22,8 +22,6 @@ load(
 load("//foreign_cc/private/framework:platform.bzl", "os_name")
 load("//toolchains/native_tools:tool_access.bzl", "get_make_data")
 
-
-
 def _configure_make(ctx):
     make_data = get_make_data(ctx)
 
@@ -77,7 +75,6 @@ def _create_configure_script(configureParameters):
     ])
 
     user_env = expand_locations(ctx, ctx.attr.env, data)
-    print("user_env is ", user_env)
 
     make_commands = []
     prefix = "{} ".format(ctx.expand_location(attrs.tool_prefix, data)) if attrs.tool_prefix else ""

@@ -168,11 +168,11 @@ def _define_deps_flags(deps, inputs):
 
 # See https://www.gnu.org/software/make/manual/html_node/Implicit-Variables.html
 _CONFIGURE_FLAGS = {
-  #  "ARFLAGS": "cxx_linker_static",
-  #  "ASFLAGS": "assemble",
-  #  "CFLAGS": "cc",
-  #  "CXXFLAGS": "cxx",
-  #  "LDFLAGS": "cxx_linker_executable",
+    "ARFLAGS": "cxx_linker_static",
+    "ASFLAGS": "assemble",
+    "CFLAGS": "cc",
+    "CXXFLAGS": "cxx",
+    "LDFLAGS": "cxx_linker_executable",
     # missing: cxx_linker_shared
 }
 
@@ -185,7 +185,6 @@ _CONFIGURE_TOOLS = {
 
 def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
     vars = {}
-    #print("tools are ", tools)
 
     for flag in _CONFIGURE_FLAGS:
         flag_value = getattr(flags, _CONFIGURE_FLAGS[flag])
@@ -193,7 +192,6 @@ def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
         if flag_value:
             vars[flag] = flag_value
 
-    print("vars are ", vars)    
     # Merge flags lists
     for user_var in user_env_vars:
         toolchain_val = vars.get(user_var)
