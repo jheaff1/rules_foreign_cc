@@ -202,7 +202,7 @@ CC_EXTERNAL_RULE_ATTRIBUTES = {
         doc = "Information about the execution platform",
         cfg = "exec",
         default = Label("@rules_foreign_cc//foreign_cc/private/framework:platform_info"),
-    ),
+    ),  
 }
 
 # A list of common fragments required by rules using this framework

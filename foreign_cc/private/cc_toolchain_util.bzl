@@ -4,6 +4,7 @@
 load("@bazel_skylib//lib:collections.bzl", "collections")
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("//toolchains/res:winsdk_toolchain.bzl", "WINDOWS_RESOURCE_COMPILER_TOOLCHAIN_TYPE")
 
 LibrariesToLinkInfo = provider(
     doc = "Libraries to be wrapped into CcLinkingInfo",
@@ -17,10 +18,12 @@ LibrariesToLinkInfo = provider(
 CxxToolsInfo = provider(
     doc = "Paths to the C/C++ tools, taken from the toolchain",
     fields = dict(
+        assemble = "Assembler",
         cc = "C compiler",
         cxx = "C++ compiler",
         cxx_linker_static = "C++ linker to link static library",
         cxx_linker_executable = "C++ linker to link executable",
+        rc = "Windows Resource Compiler",
     ),
 )
 
@@ -259,6 +262,7 @@ def get_tools_info(ctx):
     Args:
         ctx: rule context
     """
+    #print("rc toolchain is ", ctx.toolchains[str(Label(WINDOWS_RESOURCE_COMPILER_TOOLCHAIN_TYPE))].win_rc_info.rc_exe.path)
     cc_toolchain = find_cpp_toolchain(ctx)
     feature_configuration = _configure_features(
         ctx = ctx,
@@ -266,6 +270,10 @@ def get_tools_info(ctx):
     )
 
     return CxxToolsInfo(
+        assemble = cc_common.get_tool_for_action(
+            feature_configuration = feature_configuration,
+            action_name = ACTION_NAMES.assemble,
+        ),        
         cc = cc_common.get_tool_for_action(
             feature_configuration = feature_configuration,
             action_name = ACTION_NAMES.c_compile,
@@ -282,6 +290,7 @@ def get_tools_info(ctx):
             feature_configuration = feature_configuration,
             action_name = ACTION_NAMES.cpp_link_executable,
         ),
+        rc = ctx.toolchains[str(Label(WINDOWS_RESOURCE_COMPILER_TOOLCHAIN_TYPE))].win_rc_info.rc_exe.path,
     )
 
 def get_flags_info(ctx, link_output_file = None):

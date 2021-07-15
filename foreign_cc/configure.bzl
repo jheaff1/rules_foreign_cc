@@ -21,6 +21,7 @@ load(
 )
 load("//foreign_cc/private/framework:platform.bzl", "os_name")
 load("//toolchains/native_tools:tool_access.bzl", "get_make_data")
+load("//toolchains/res:winsdk_toolchain.bzl", "WINDOWS_RESOURCE_COMPILER_TOOLCHAIN_TYPE")
 
 def _configure_make(ctx):
     make_data = get_make_data(ctx)
@@ -62,6 +63,7 @@ def _create_configure_script(configureParameters):
     install_prefix = _get_install_prefix(ctx)
 
     tools = get_tools_info(ctx)
+    print("tools are ", tools)
     flags = get_flags_info(ctx)
 
     define_install_prefix = ["export INSTALL_PREFIX=\"" + _get_install_prefix(ctx) + "\""]
@@ -241,6 +243,7 @@ configure_make = rule(
         "@rules_foreign_cc//toolchains:make_toolchain",
         "@rules_foreign_cc//foreign_cc/private/framework:shell_toolchain",
         "@bazel_tools//tools/cpp:toolchain_type",
+        WINDOWS_RESOURCE_COMPILER_TOOLCHAIN_TYPE,
     ],
     # TODO: Remove once https://github.com/bazelbuild/bazel/issues/11584 is closed and the min supported
     # version is updated to a release of Bazel containing the new default for this setting.

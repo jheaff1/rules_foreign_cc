@@ -42,7 +42,7 @@ def create_configure_script(
     # can we get this from the cc toolchain info? see PR 8907 in bazel repo. copy src/main/res/winsdk_configure.bzl, with licence at top and say it is from main bazel repo.
     # see example usage at top of winsdk_configure.bzl. in third party WORKSPACE, call register_local_rc_exe toolchains, then add the local rc toolchain to the "toolchains" attr of openssl
     # then set the RC env var to the path of the RC toolchain
-    script.append("##export_var## RC \"/c/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x64/rc.exe\"") 
+    #script.append("##export_var## RC \"/c/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x64/rc.exe\"") 
     script.append("##enable_tracing##")
 
     if autogen:
@@ -169,7 +169,7 @@ def _define_deps_flags(deps, inputs):
 # See https://www.gnu.org/software/make/manual/html_node/Implicit-Variables.html
 _CONFIGURE_FLAGS = {
     "ARFLAGS": "cxx_linker_static",
-    "ASFLAGS": "assemble",
+   # "ASFLAGS": "assemble",
     "CFLAGS": "cc",
     "CXXFLAGS": "cxx",
     "LDFLAGS": "cxx_linker_executable",
@@ -177,10 +177,12 @@ _CONFIGURE_FLAGS = {
 }
 
 _CONFIGURE_TOOLS = {
+    "AS": "assemble",
     "AR": "cxx_linker_static",
     "CC": "cc",
     "CXX": "cxx",
     "LD": "cxx_linker_executable",
+    "RC": "rc"
 }
 
 def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
@@ -201,13 +203,17 @@ def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
     tools_dict = {}
     for tool in _CONFIGURE_TOOLS:
         tool_value = getattr(tools, _CONFIGURE_TOOLS[tool])
-        tool_value = "\\\"" + tool_value + "\\\""
         if tool_value:
             # Force absolutize of tool paths, which may relative to the workspace
             # dir (hermetic toolchains) be provided in project repositories
             # (i.e hermetic toolchains).
-            tools_dict[tool] = [tool_value]
-            #tools_dict[tool] = [_absolutize(workspace_name, tool_value, True)]
+            #tools_dict[tool] = [tool_value]
+            tool_value_absolute = _absolutize(workspace_name, tool_value, True)
+            # make a common is_windows_path, to be used by _absolutize, here and built_tools_framework.bzl 
+            if tool_value_absolute[1] == ":":
+                tool_value_absolute = "\\\"" + tool_value_absolute + "\\\""            
+            
+            tools_dict[tool] = [tool_value_absolute]
 
     # Replace tools paths if user passed other values
     for user_var in user_env_vars:
