@@ -77,7 +77,7 @@ def create_configure_script(
     # putting env vars after seemed to resolve msys path mangling when running perl.
     # Other things to try are changing "/" options like "/nologo" to "//nologo" or "-nologo"
     # See https://msys2.org/wiki/Porting/, which links to a github repo https://github.com/Alexpux/path_convert, raise issue when using strawberry perl.
-    script.append("{prefix}\"{configure}\" --prefix=$$BUILD_TMPDIR$$/$$INSTALL_PREFIX$$ {env_vars} {user_options}".format(
+    script.append("{env_vars} {prefix}\"{configure}\" --prefix=$$BUILD_TMPDIR$$/$$INSTALL_PREFIX$$ {user_options}".format(
         env_vars = _get_env_vars(workspace_name, tools, flags, env_vars, deps, inputs),
         prefix = configure_prefix,
         configure = configure_path,
@@ -168,11 +168,11 @@ def _define_deps_flags(deps, inputs):
 
 # See https://www.gnu.org/software/make/manual/html_node/Implicit-Variables.html
 _CONFIGURE_FLAGS = {
-    "ARFLAGS": "cxx_linker_static",
-    "ASFLAGS": "assemble",
-    "CFLAGS": "cc",
-    "CXXFLAGS": "cxx",
-    "LDFLAGS": "cxx_linker_executable",
+  #  "ARFLAGS": "cxx_linker_static",
+  #  "ASFLAGS": "assemble",
+  #  "CFLAGS": "cc",
+  #  "CXXFLAGS": "cxx",
+  #  "LDFLAGS": "cxx_linker_executable",
     # missing: cxx_linker_shared
 }
 
@@ -185,13 +185,15 @@ _CONFIGURE_TOOLS = {
 
 def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
     vars = {}
-    print("tools are ", tools)
+    #print("tools are ", tools)
 
     for flag in _CONFIGURE_FLAGS:
         flag_value = getattr(flags, _CONFIGURE_FLAGS[flag])
+        flag_value = [item.replace("/", "-") for item in flag_value]
         if flag_value:
             vars[flag] = flag_value
 
+    print("vars are ", vars)    
     # Merge flags lists
     for user_var in user_env_vars:
         toolchain_val = vars.get(user_var)
@@ -201,6 +203,7 @@ def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
     tools_dict = {}
     for tool in _CONFIGURE_TOOLS:
         tool_value = getattr(tools, _CONFIGURE_TOOLS[tool])
+        tool_value = "\\\"" + tool_value + "\\\""
         if tool_value:
             # Force absolutize of tool paths, which may relative to the workspace
             # dir (hermetic toolchains) be provided in project repositories

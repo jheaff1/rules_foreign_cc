@@ -99,7 +99,8 @@ def _create_configure_script(configureParameters):
 
     for target in ctx.attr.targets:
         # Configure will have generated sources into `$BUILD_TMPDIR` so make sure we `cd` there
-        make_commands.append("{prefix}{make} -f $$BUILD_TMPDIR$$/Makefile {target} {args}".format(
+#        make_commands.append("{prefix}{make} -f $$BUILD_TMPDIR$$/Makefile {target} {args}".format(        
+        make_commands.append("cd $$BUILD_TMPDIR$$ && {prefix}{make} {target} {args} && cd -".format(
             prefix = prefix,
             make = compiler_path + "/nmake.exe",
             args = args,
