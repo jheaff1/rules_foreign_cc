@@ -38,6 +38,8 @@ def create_configure_script(
         root_path = "$$BUILD_TMPDIR$$"
         configure_path = "{}/{}".format(root_path, configure_command)
 
+    print("make path is ", make_path)
+    script.append("##export_var## MAKE {}".format(make_path))
     script.append("##enable_tracing##")
 
     if autogen:
@@ -70,7 +72,7 @@ def create_configure_script(
         ).lstrip())
 
     script.append("{env_vars} {prefix}\"{configure}\" --prefix=$$BUILD_TMPDIR$$/$$INSTALL_PREFIX$$ {user_options}".format(
-        env_vars = _get_env_vars(workspace_name, tools, flags, env_vars, deps, inputs),
+        env_vars = _get_env_vars(workspace_name, target_os, tools, flags, env_vars, deps, inputs),
         prefix = configure_prefix,
         configure = configure_path,
         user_options = " ".join(user_options),
@@ -94,12 +96,13 @@ def _get_autogen_env_vars(autogen_env_vars):
 # buildifier: disable=function-docstring
 def _get_env_vars(
         workspace_name,
+        os,
         tools,
         flags,
         user_vars,
         deps,
         inputs):
-    vars = _get_configure_variables(workspace_name, tools, flags, user_vars)
+    vars = _get_configure_variables(workspace_name, os, tools, flags, user_vars)
     deps_flags = _define_deps_flags(deps, inputs)
 
     if "LDFLAGS" in vars.keys():
@@ -176,7 +179,7 @@ _CONFIGURE_TOOLS = {
     "RC": "rc"
 }
 
-def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
+def _get_configure_variables(workspace_name, os, tools, flags, user_env_vars):
     vars = {}
 
     for flag in _CONFIGURE_FLAGS:
@@ -194,14 +197,15 @@ def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
     for tool in _CONFIGURE_TOOLS:
         tool_value = getattr(tools, _CONFIGURE_TOOLS[tool])
         if tool_value:
-            # Force absolutize of tool paths, which may relative to the workspace
-            # dir (hermetic toolchains) be provided in project repositories
-            # (i.e hermetic toolchains).
-            #tools_dict[tool] = [tool_value]
+            # Force absolutize of tool paths, which may relative to the exec root (e.g. hermetic toolchains built from source)
             tool_value_absolute = _absolutize(workspace_name, tool_value, True)
-            # make a common is_windows_path, to be used by _absolutize, here and built_tools_framework.bzl 
-            if tool_value_absolute[1] == ":":
-                tool_value_absolute = "\\\"" + tool_value_absolute + "\\\""            
+
+            # If the tool path is a windows path after env variable expansion (e.g. C:\path\to\tool),
+            # MSYS2 requires that the tools paths are wrapped in double quotes
+            #if "win" in os and not tool_value.startswith("/"):
+            ## TODO check if the tool is an absolute windows path (make common function in cc_toolchain_util, use in built_tool_framework)
+            if tool_value_absolute[1] == ":":        
+                tool_value_absolute = "\\\"" + tool_value_absolute + "\\\""                      
             
             tools_dict[tool] = [tool_value_absolute]
 

@@ -84,14 +84,19 @@ def _create_configure_script(configureParameters):
 
     cc_toolchain = find_cpp_toolchain(ctx)
 
-    path_prepend_cmd = ""
+    make_path = attrs.make_path
+    print("make")
+    # change this to "if nmake"
     if "win" in os_name(ctx):
         # Prepend PATH environment variable with the path to the toolchain linker, which prevents MSYS using its linker (/usr/bin/link.exe) rather than the MSVC linker (both are named "link.exe")
         compiler_path = paths.dirname(cc_toolchain.compiler_executable)
 
         # Change prefix of linker path from Windows style to Unix style, required by MSYS. E.g. change "C:" to "/c"
+        ## todo instead prepend and append double quotes.
         if compiler_path[0].isalpha() and compiler_path[1] == ":":
-            compiler_path = "\"" +  compiler_path.replace(compiler_path[0:2], "/" + compiler_path[0].lower()) + "\""
+            compiler_path = "\"" +  compiler_path.replace(compiler_path[0:2], "/" + compiler_path[0].lower()) + "/nmake.exe" + "\""
+
+        make_path = compiler_path
 
         # MSYS requires pahts containing whitespace to be wrapped in quotation marks
         #path_prepend_cmd = "export PATH=\"" + linker_path + "\":$PATH"    
@@ -101,7 +106,7 @@ def _create_configure_script(configureParameters):
 #        make_commands.append("{prefix}{make} -f $$BUILD_TMPDIR$$/Makefile {target} {args}".format(        
         make_commands.append("cd $$BUILD_TMPDIR$$ && {prefix}{make} {target} {args} && cd -".format(
             prefix = prefix,
-            make = compiler_path + "/nmake.exe",
+            make = make_path,
             args = args,
             target = target,
         ))
@@ -129,7 +134,7 @@ def _create_configure_script(configureParameters):
         autogen_command = ctx.attr.autogen_command,
         autogen_options = ctx.attr.autogen_options,
         make_commands = make_commands,
-        make_path = attrs.make_path,
+        make_path = make_path,
     )
     return define_install_prefix + configure
 
