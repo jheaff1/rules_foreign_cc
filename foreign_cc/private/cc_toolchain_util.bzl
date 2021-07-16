@@ -18,7 +18,6 @@ LibrariesToLinkInfo = provider(
 CxxToolsInfo = provider(
     doc = "Paths to the C/C++ tools, taken from the toolchain",
     fields = dict(
-        assemble = "Assembler",
         cc = "C compiler",
         cxx = "C++ compiler",
         cxx_linker_static = "C++ linker to link static library",
@@ -262,7 +261,6 @@ def get_tools_info(ctx):
     Args:
         ctx: rule context
     """
-    #print("rc toolchain is ", ctx.toolchains[str(Label(WINDOWS_RESOURCE_COMPILER_TOOLCHAIN_TYPE))].win_rc_info.rc_exe.path)
     cc_toolchain = find_cpp_toolchain(ctx)
     feature_configuration = _configure_features(
         ctx = ctx,
@@ -270,10 +268,6 @@ def get_tools_info(ctx):
     )
 
     return CxxToolsInfo(
-        assemble = cc_common.get_tool_for_action(
-            feature_configuration = feature_configuration,
-            action_name = ACTION_NAMES.assemble,
-        ),        
         cc = cc_common.get_tool_for_action(
             feature_configuration = feature_configuration,
             action_name = ACTION_NAMES.c_compile,
@@ -377,13 +371,23 @@ def get_flags_info(ctx, link_output_file = None):
         ),
     )
     return CxxFlagsInfo(
-        cc = _add_if_needed(flags.cc, copts),
-        cxx = _add_if_needed(flags.cxx, cxxopts),
-        cxx_linker_shared = _add_if_needed(flags.cxx_linker_shared, linkopts),
-        cxx_linker_static = flags.cxx_linker_static,
-        cxx_linker_executable = _add_if_needed(flags.cxx_linker_executable, linkopts),
-        assemble = _add_if_needed(flags.assemble, copts),
+        cc = _convert_flags(cc_toolchain_.compiler, _add_if_needed(flags.cc, copts)),
+        cxx = _convert_flags(cc_toolchain_.compiler, _add_if_needed(flags.cxx, cxxopts)),
+        cxx_linker_shared = _convert_flags(cc_toolchain_.compiler, _add_if_needed(flags.cxx_linker_shared, linkopts)),
+        cxx_linker_static = _convert_flags(cc_toolchain_.compiler, flags.cxx_linker_static),
+        cxx_linker_executable = _convert_flags(cc_toolchain_.compiler, _add_if_needed(flags.cxx_linker_executable, linkopts)),
+        assemble = _convert_flags(cc_toolchain_.compiler, _add_if_needed(flags.assemble, copts)),
     )
+
+def _convert_flags(compiler, flags):
+    """
+    MSYS2 may convert leading slashes to the absolute path of the msys root directory, even if MSYS_NO_PATHCONV=1 and MSYS2_ARG_CONV_EXCL="*"
+    .E.g MSYS2 may convert "/nologo" to "C:/msys64/nologo".
+    Therefore, as MSVC tool flags can start with either a slash or dash, convert slashes to dashes
+    """
+    if compiler == "msvc-cl":
+        return [flag.replace("/", "-") for flag in flags if flag.startswith("/")]
+    return flags
 
 def _add_if_needed(arr, add_arr):
     filtered = []
