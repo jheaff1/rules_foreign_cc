@@ -31,7 +31,7 @@ configure_make(
         "//conditions:default": {
             "PATH" : "$(dirname $(execpath @perl//:perl)):$(dirname $(execpath @nasm//:nasm)):$PATH",
             # unset Microsoft assembler (MASM) flags set by built-in MSVC toolchain, as NASM is unsed rather than MASM
-            #"ASFLAGS" : "",
+            "CFLAGS" : "-Zi",
             },
     }),
     lib_source = ":all_srcs",
