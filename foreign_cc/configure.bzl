@@ -24,6 +24,8 @@ load("//toolchains/native_tools:tool_access.bzl", "get_make_data")
 load("//toolchains/res:winsdk_toolchain.bzl", "WINDOWS_RESOURCE_COMPILER_TOOLCHAIN_TYPE")
 
 def _configure_make(ctx):
+    ## TODO see what make_data is when using preinstalled tools and have get_make_data return the right stuff for nmake
+    ## or make an nmake foreign cc toolchain. Perhaps path to nmake can be accessed using the @local_config_cc//:msvc_compiler_files filegroup
     make_data = get_make_data(ctx)
 
     tools_deps = ctx.attr.tools_deps + make_data.deps

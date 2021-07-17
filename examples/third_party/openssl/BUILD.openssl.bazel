@@ -28,11 +28,14 @@ configure_make(
     # set the AS variable to the path of nasm
     env = select({
         "@platforms//os:macos": {"AR": ""},
+        # TODO see if the below works if --compiler=msvc-cl is set. Also see https://github.com/bazelbuild/bazel/issues/7730#issuecomment-474375630
+        #"@bazel_tools//tools/cpp:msvc": {
         "//conditions:default": {
             "PATH" : "$(dirname $(execpath @perl//:perl)):$(dirname $(execpath @nasm//:nasm)):$PATH",
             # unset Microsoft assembler (MASM) flags set by built-in MSVC toolchain, as NASM is unsed rather than MASM
             "CFLAGS" : "-Zi",
             },
+        #"//conditions:default": {}
     }),
     lib_source = ":all_srcs",
     out_static_libs = [

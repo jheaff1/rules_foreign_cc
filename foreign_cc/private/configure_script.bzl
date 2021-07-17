@@ -200,11 +200,9 @@ def _get_configure_variables(workspace_name, os, tools, flags, user_env_vars):
             # Force absolutize of tool paths, which may relative to the exec root (e.g. hermetic toolchains built from source)
             tool_value_absolute = _absolutize(workspace_name, tool_value, True)
 
-            # If the tool path is a windows path after env variable expansion (e.g. C:\path\to\tool),
-            # MSYS2 requires that the tools paths are wrapped in double quotes
-            #if "win" in os and not tool_value.startswith("/"):
-            ## TODO check if the tool is an absolute windows path (make common function in cc_toolchain_util, use in built_tool_framework)
-            if tool_value_absolute[1] == ":":        
+            # If the tool path contains whitespaces (e.g. C:\Program Files\...),
+            # MSYS2 requires that the path is wrapped in double quotes
+            if " " in tool_value_absolute: 
                 tool_value_absolute = "\\\"" + tool_value_absolute + "\\\""                      
             
             tools_dict[tool] = [tool_value_absolute]
