@@ -4,7 +4,6 @@
 load("@bazel_skylib//lib:collections.bzl", "collections")
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
-load("//toolchains/res:winsdk_toolchain.bzl", "WINDOWS_RESOURCE_COMPILER_TOOLCHAIN_TYPE")
 
 LibrariesToLinkInfo = provider(
     doc = "Libraries to be wrapped into CcLinkingInfo",
@@ -22,7 +21,6 @@ CxxToolsInfo = provider(
         cxx = "C++ compiler",
         cxx_linker_static = "C++ linker to link static library",
         cxx_linker_executable = "C++ linker to link executable",
-        rc = "Windows Resource Compiler",
     ),
 )
 
@@ -284,7 +282,6 @@ def get_tools_info(ctx):
             feature_configuration = feature_configuration,
             action_name = ACTION_NAMES.cpp_link_executable,
         ),
-        rc = ctx.toolchains[str(Label(WINDOWS_RESOURCE_COMPILER_TOOLCHAIN_TYPE))].win_rc_info.rc_exe.path,
     )
 
 def get_flags_info(ctx, link_output_file = None):

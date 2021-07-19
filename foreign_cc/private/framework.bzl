@@ -103,7 +103,8 @@ CC_EXTERNAL_RULE_ATTRIBUTES = {
             "`$(execpath)` macros may be used to point at files which are listed as `data`, `deps`, or `build_data`, " +
             "but unlike with other rules, these will be replaced with absolute paths to those files, " +
             "because the build does not run in the exec root. " +
-            "No other macros are supported."
+            "No other macros are supported." + 
+            "PATH entries will be prepended to the existing PATH."
         ),
     ),
     "lib_name": attr.string(
@@ -299,7 +300,13 @@ def get_env_prelude(ctx, lib_name, data_dependencies, target_root):
     env.update(cc_env)
 
     # Add all user defined variables
-    env.update(expand_locations(ctx, ctx.attr.env, data_dependencies))
+    user_vars = expand_locations(ctx, ctx.attr.env, data_dependencies)
+    env.update(user_vars)
+    
+    # If user has defined a PATH variable, prepend it to the existing PATH variable
+    if user_vars.get("PATH") and cc_env.get("PATH"):
+        env.update({"PATH": user_vars.get("PATH") + ":" + cc_env.get("PATH")})
+    
     env_snippet.extend(["export {}=\"{}\"".format(key, _escape_dquote(val)) for key, val in env.items()])
 
     return env_snippet

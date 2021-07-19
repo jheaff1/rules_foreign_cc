@@ -21,11 +21,8 @@ load(
 )
 load("//foreign_cc/private/framework:platform.bzl", "os_name")
 load("//toolchains/native_tools:tool_access.bzl", "get_make_data")
-load("//toolchains/res:winsdk_toolchain.bzl", "WINDOWS_RESOURCE_COMPILER_TOOLCHAIN_TYPE")
 
 def _configure_make(ctx):
-    ## TODO see what make_data is when using preinstalled tools and have get_make_data return the right stuff for nmake
-    ## or make an nmake foreign cc toolchain. Perhaps path to nmake can be accessed using the @local_config_cc//:msvc_compiler_files filegroup
     make_data = get_make_data(ctx)
 
     tools_deps = ctx.attr.tools_deps + make_data.deps
@@ -65,7 +62,6 @@ def _create_configure_script(configureParameters):
     install_prefix = _get_install_prefix(ctx)
 
     tools = get_tools_info(ctx)
-    print("tools are ", tools)
     flags = get_flags_info(ctx)
 
     define_install_prefix = ["export INSTALL_PREFIX=\"" + _get_install_prefix(ctx) + "\""]
@@ -87,26 +83,16 @@ def _create_configure_script(configureParameters):
     cc_toolchain = find_cpp_toolchain(ctx)
 
     make_path = attrs.make_path
-    print("make")
-    # change this to "if nmake"
-    if "win" in os_name(ctx):
-        # Prepend PATH environment variable with the path to the toolchain linker, which prevents MSYS using its linker (/usr/bin/link.exe) rather than the MSVC linker (both are named "link.exe")
-        compiler_path = paths.dirname(cc_toolchain.compiler_executable)
-
-        # Change prefix of linker path from Windows style to Unix style, required by MSYS. E.g. change "C:" to "/c"
-        ## todo instead prepend and append double quotes.
-        if compiler_path[0].isalpha() and compiler_path[1] == ":":
-            compiler_path = "\"" +  compiler_path.replace(compiler_path[0:2], "/" + compiler_path[0].lower()) + "/nmake.exe" + "\""
-
-        make_path = compiler_path
-
-        # MSYS requires pahts containing whitespace to be wrapped in quotation marks
-        #path_prepend_cmd = "export PATH=\"" + linker_path + "\":$PATH"    
+    if ctx.attr.nmake:
+        make_path = "nmake.exe"  
 
     for target in ctx.attr.targets:
+        command_str = "{prefix}{make} -C $$BUILD_TMPDIR$$ {target} {args}"
+        if ctx.attr.nmake:
+            command_str ="cd $$BUILD_TMPDIR$$ && {prefix}{make} {target} {args} && cd -"
+            
         # Configure will have generated sources into `$BUILD_TMPDIR` so make sure we `cd` there
-#        make_commands.append("{prefix}{make} -f $$BUILD_TMPDIR$$/Makefile {target} {args}".format(        
-        make_commands.append("cd $$BUILD_TMPDIR$$ && {prefix}{make} {target} {args} && cd -".format(
+        make_commands.append(command_str.format(
             prefix = prefix,
             make = make_path,
             args = args,
@@ -222,6 +208,13 @@ def _attrs():
             ),
             mandatory = False,
         ),
+        "nmake": attr.bool(
+            doc = (
+                "Set to True if nmake (provided by the MSVC suite) should be used instead of GNU Make."
+            ),
+            mandatory = False,
+            default = False,
+        ),        
         "targets": attr.string_list(
             doc = (
                 "A list of targets within the foreign build system to produce. An empty string (`\"\"`) will result in " +
@@ -250,7 +243,6 @@ configure_make = rule(
         "@rules_foreign_cc//toolchains:make_toolchain",
         "@rules_foreign_cc//foreign_cc/private/framework:shell_toolchain",
         "@bazel_tools//tools/cpp:toolchain_type",
-        WINDOWS_RESOURCE_COMPILER_TOOLCHAIN_TYPE,
     ],
     # TODO: Remove once https://github.com/bazelbuild/bazel/issues/11584 is closed and the min supported
     # version is updated to a release of Bazel containing the new default for this setting.

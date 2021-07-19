@@ -39,6 +39,7 @@ def create_configure_script(
         configure_path = "{}/{}".format(root_path, configure_command)
 
     # TODO change export_var windows_commands to wrap strings that contain whitespace in quotes, eg C:\Program Files
+    # now that nmake is just "nmake.exe", should be able to uncomment the below hopefully
    # script.append("##export_var## MAKE {}".format(make_path))
     script.append("##enable_tracing##")
 
@@ -176,7 +177,6 @@ _CONFIGURE_TOOLS = {
     "CC": "cc",
     "CXX": "cxx",
     "LD": "cxx_linker_executable",
-    "RC": "rc"
 }
 
 def _get_configure_variables(workspace_name, os, tools, flags, user_env_vars):

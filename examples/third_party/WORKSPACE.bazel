@@ -9,13 +9,6 @@ load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_depende
 
 rules_foreign_cc_dependencies(register_preinstalled_tools = False)
 
-load("@rules_foreign_cc//toolchains/res:winsdk_configure.bzl", "winsdk_configure")
-winsdk_configure(name = "local_config_winsdk")
-
-load("@local_config_winsdk//:toolchains.bzl", "register_local_rc_exe_toolchains")
-
-register_local_rc_exe_toolchains()
-
 local_repository(
     name = "rules_foreign_cc_examples",
     path = "..",
