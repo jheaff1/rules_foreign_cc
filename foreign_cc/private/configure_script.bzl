@@ -40,7 +40,7 @@ def create_configure_script(
 
     # TODO change export_var windows_commands to wrap strings that contain whitespace in quotes, eg C:\Program Files
     # now that nmake is just "nmake.exe", should be able to uncomment the below hopefully
-   # script.append("##export_var## MAKE {}".format(make_path))
+    script.append("##export_var## MAKE {}".format(make_path))
     script.append("##enable_tracing##")
 
     if autogen:
@@ -73,7 +73,7 @@ def create_configure_script(
         ).lstrip())
 
     script.append("{env_vars} {prefix}\"{configure}\" --prefix=$$BUILD_TMPDIR$$/$$INSTALL_PREFIX$$ {user_options}".format(
-        env_vars = _get_env_vars(workspace_name, target_os, tools, flags, env_vars, deps, inputs),
+        env_vars = _get_env_vars(workspace_name, tools, flags, env_vars, deps, inputs),
         prefix = configure_prefix,
         configure = configure_path,
         user_options = " ".join(user_options),
@@ -97,13 +97,12 @@ def _get_autogen_env_vars(autogen_env_vars):
 # buildifier: disable=function-docstring
 def _get_env_vars(
         workspace_name,
-        os,
         tools,
         flags,
         user_vars,
         deps,
         inputs):
-    vars = _get_configure_variables(workspace_name, os, tools, flags, user_vars)
+    vars = _get_configure_variables(workspace_name, tools, flags, user_vars)
     deps_flags = _define_deps_flags(deps, inputs)
 
     if "LDFLAGS" in vars.keys():
@@ -179,7 +178,7 @@ _CONFIGURE_TOOLS = {
     "LD": "cxx_linker_executable",
 }
 
-def _get_configure_variables(workspace_name, os, tools, flags, user_env_vars):
+def _get_configure_variables(workspace_name, tools, flags, user_env_vars):
     vars = {}
 
     for flag in _CONFIGURE_FLAGS:

@@ -80,21 +80,14 @@ def _create_configure_script(configureParameters):
     prefix = "{} ".format(ctx.expand_location(attrs.tool_prefix, data)) if attrs.tool_prefix else ""
     configure_prefix = "{} ".format(ctx.expand_location(ctx.attr.configure_prefix, data)) if ctx.attr.configure_prefix else ""
 
-    cc_toolchain = find_cpp_toolchain(ctx)
-
-    make_path = attrs.make_path
-    if ctx.attr.nmake:
-        make_path = "nmake.exe"  
+    make_path = "nmake.exe" if ctx.attr.nmake else attrs.make_path
 
     for target in ctx.attr.targets:
-        command_str = "{prefix}{make} -C $$BUILD_TMPDIR$$ {target} {args}"
-        if ctx.attr.nmake:
-            command_str ="cd $$BUILD_TMPDIR$$ && {prefix}{make} {target} {args} && cd -"
-            
         # Configure will have generated sources into `$BUILD_TMPDIR` so make sure we `cd` there
-        make_commands.append(command_str.format(
+        make_commands.append("{prefix}{make} {flags} {target} {args}".format(
             prefix = prefix,
             make = make_path,
+            flags = "-F $$BUILD_TMPDIR$$/makefile" if ctx.attr.nmake else "-C $$BUILD_TMPDIR$$",
             args = args,
             target = target,
         ))
