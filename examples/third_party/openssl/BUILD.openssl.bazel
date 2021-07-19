@@ -6,6 +6,13 @@ load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 
 # Read https://wiki.openssl.org/index.php/Compilation_and_Installation
 
+config_setting(
+    name = "msvc_compiler",
+    flag_values = {
+        "@bazel_tools//tools/cpp:compiler": "msvc-cl",
+    },
+)
+
 filegroup(
     name = "all_srcs",
     srcs = glob(["**"]),
@@ -15,32 +22,61 @@ CONFIGURE_OPTIONS = [
     "no-comp",
     "no-idea",
     "no-weak-ssl-ciphers",
+    "no-shared",
 ]
 
 configure_make(
     name = "openssl",
-    configure_command = "config",
+    build_data = select({
+        ":msvc_compiler": [
+            "@nasm//:nasm",
+            "@perl//:perl",
+        ],
+        "//conditions:default": [],
+    }),
+    configure_command = select({
+        ":msvc_compiler": "Configure",
+        "//conditions:default": "config",
+    }),
     configure_in_place = True,
-    configure_options = select({
-        "@platforms//os:macos": [
-            "ARFLAGS=r",
-            "no-afalgeng",
-            "no-asm",
-            "no-shared",
-        ] + CONFIGURE_OPTIONS,
-        "//conditions:default": [
-            "no-shared",
-        ] + CONFIGURE_OPTIONS,
+    configure_options = CONFIGURE_OPTIONS + select({
+        ":msvc_compiler": [
+            "VC-WIN64A",
+            # Unset Microsoft Assembler (MASM) flags set by built-in MSVC toolchain,
+            # as NASM is unsed to build OpenSSL rather than MASM
+            "ASFLAGS=\" \"",
+        ],
+        "//conditions:default": [],
+    }),
+    configure_prefix = select({
+        ":msvc_compiler": "$PERL",
+        "//conditions:default": "",
     }),
     env = select({
         "@platforms//os:macos": {"AR": ""},
+        ":msvc_compiler": {
+            # The Zi flag must be set otherwise OpenSSL fails to build due to missing .pdb files
+            "CFLAGS": "-Zi",
+            "PATH": "$(dirname $(execpath @nasm//:nasm)):$PATH",
+            "PERL": "$(execpath @perl//:perl)",
+        },
         "//conditions:default": {},
     }),
     lib_source = ":all_srcs",
-    out_static_libs = [
-        "libcrypto.a",
-        "libssl.a",
-    ],
+    nmake = select({
+        ":msvc_compiler": True,
+        "//conditions:default": False,
+    }),
+    out_static_libs = select({
+        ":msvc_compiler": [
+            "libcrypto.lib",
+            "libssl.lib",
+        ],
+        "//conditions:default": [
+            "libcrypto.a",
+            "libssl.a",
+        ],
+    }),
     targets = [
         "build_libs",
         "install_dev",
