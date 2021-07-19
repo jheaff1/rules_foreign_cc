@@ -6,6 +6,13 @@ load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 
 # Read https://wiki.openssl.org/index.php/Compilation_and_Installation
 
+config_setting(
+    name = "msvc_compiler",
+    flag_values = {
+        "@bazel_tools//tools/cpp:compiler": "msvc-cl",
+    },
+)
+
 filegroup(
     name = "all_srcs",
     srcs = glob(["**"]),
@@ -15,44 +22,66 @@ CONFIGURE_OPTIONS = [
     "no-comp",
     "no-idea",
     "no-weak-ssl-ciphers",
+    "no-shared",
 ]
 
 ##TODO handle MSVC and mingw
 configure_make(
     name = "openssl",
-    configure_prefix = "perl.exe ",
-    configure_command = "Configure", # or instead use configure_prefix = "perl " and configure_command is "Configure"
+    build_data = select({
+        ":msvc_compiler": [
+            "@nasm//:nasm",
+            "@perl//:perl",
+        ],
+        "//conditions:default": [],
+    }),
+    configure_command = select({
+        ":msvc_compiler": "Configure",
+        "//conditions:default": "config",
+    }),
     configure_in_place = True,
-    configure_options = ["VC-WIN64A", "no-shared", "no-comp", "no-idea", "no-weak-ssl-ciphers", "ASFLAGS=\" \""],
+    configure_options = CONFIGURE_OPTIONS + select({
+        ":msvc_compiler": [
+            "VC-WIN64A",
+
+            # Unset Microsoft Assembler (MASM) flags set by built-in MSVC toolchain,
+            # as NASM is unsed to build OpenSSL rather than MASM
+            "ASFLAGS=\" \"",
+        ],
+        "//conditions:default": [],
+    }),
+    configure_prefix = select({
+        ":msvc_compiler": "$PERL",
+        "//conditions:default": "",
+    }),
     # rather than adding to path, try setting PERL and NASM variables
     # set the AS variable to the path of nasm
     env = select({
         "@platforms//os:macos": {"AR": ""},
-        # TODO see if the below works if --compiler=msvc-cl is set. Also see https://github.com/bazelbuild/bazel/issues/7730#issuecomment-474375630
-        #"@bazel_tools//tools/cpp:msvc": {
-        "//conditions:default": {
-            "PATH" : "$(dirname $(execpath @perl//:perl)):$(dirname $(execpath @nasm//:nasm)):$PATH",
-            # unset Microsoft assembler (MASM) flags set by built-in MSVC toolchain, as NASM is unsed rather than MASM
-            "CFLAGS" : "-Zi",
-            },
-        #"//conditions:default": {}
+        ":msvc_compiler": {
+            #TODO adding PATH var here overwrites the PATH that includes toolchain directories, therefore nmake isnt on the path. See get_env_prelude of framework.bzl
+            "PATH": "$(dirname $(execpath @nasm//:nasm)):$PATH",
+            "PERL": "$(execpath @perl//:perl)",
+            # The Zi flag must be set otherwise OpenSSL fails to build due to missing .pdb files
+            "CFLAGS": "-Zi",
+        },
+        "//conditions:default": {},
     }),
     lib_source = ":all_srcs",
-    out_static_libs = [
-        "libcrypto.lib",
-        "libssl.lib",
-    ],
-    #features = ["no_legacy_features"],
-    #features = ["-default_compile_flags"],
+    out_static_libs = select({
+        ":msvc_compiler": [
+            "libcrypto.lib",
+            "libssl.lib",
+        ],
+        "//conditions:default": [
+            "libcrypto.a",
+            "libssl.a",
+        ],
+    }),
     targets = [
         "build_libs",
         "install_dev",
     ],
-    build_data = [
-        "@nasm//:nasm",
-        "@perl//:perl"
-    ],
-    copts = [""],
     visibility = ["//visibility:public"],
 )
 
