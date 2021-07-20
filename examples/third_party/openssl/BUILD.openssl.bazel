@@ -13,6 +13,13 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "mingw_compiler",
+    flag_values = {
+        "@bazel_tools//tools/cpp:compiler": "mingw-gcc",
+    },
+)
+
 filegroup(
     name = "all_srcs",
     srcs = glob(["**"]),
@@ -35,7 +42,7 @@ configure_make(
         "//conditions:default": [],
     }),
     configure_command = select({
-        ":msvc_compiler": "Configure",
+        "@platforms//os:windows": "Configure",
         "//conditions:default": "config",
     }),
     configure_in_place = True,
@@ -46,10 +53,14 @@ configure_make(
             # as NASM is unsed to build OpenSSL rather than MASM
             "ASFLAGS=\" \"",
         ],
+        ":mingw_compiler": ["mingw64"],
         "//conditions:default": [],
     }),
     configure_prefix = select({
+        # When targetting MSVC, OpenSSL requires that a native perl is used (e.g. strawberry perl)
         ":msvc_compiler": "$PERL",
+        # When targetting mingw, OpenSSL requires that a msys perl is used (i.e. perl.exe on the PATH)
+        ":mingw_compiler": "perl.exe",
         "//conditions:default": "",
     }),
     env = select({
