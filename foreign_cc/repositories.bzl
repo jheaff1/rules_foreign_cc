@@ -54,7 +54,7 @@ def rules_foreign_cc_dependencies(
         # host environment but there does not appear to be any way to get `nmake` outside
         # of installing Visual Studio. It is considered a default toolchain to add better
         # support for MSVC Windows platforms.
-        #native.register_toolchains(str(Label("//toolchains:preinstalled_nmake_toolchain")))
+        native.register_toolchains(str(Label("//toolchains:preinstalled_nmake_toolchain")))
 
     if register_built_tools:
         built_toolchains(

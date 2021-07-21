@@ -2,8 +2,8 @@
 
 load(":boost_build.bzl", _boost_build = "boost_build")
 load(":cmake.bzl", _cmake = "cmake")
-load(":configure.bzl", _configure_make = "configure_make")
-load(":nmake.bzl", _configure_nmake = "configure_nmake")
+load(":configure.bzl", _configure_make = "configure_make", _configure_nmake = "configure_nmake")
+#load(":nmake.bzl", _configure_nmake = "configure_nmake")
 load(":make.bzl", _make = "make")
 load(":ninja.bzl", _ninja = "ninja")
 

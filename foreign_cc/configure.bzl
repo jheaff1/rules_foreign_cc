@@ -19,10 +19,10 @@ load(
     "expand_locations",
 )
 load("//foreign_cc/private/framework:platform.bzl", "os_name")
-load("//toolchains/native_tools:tool_access.bzl", "get_make_data")
+load("//toolchains/native_tools:tool_access.bzl", "get_make_data", "get_nmake_data")
 
-def _configure_make(ctx):
-    make_data = get_make_data(ctx)
+def _configure_make(ctx, tool_name):
+    make_data = get_make_data(ctx) if tool_name == "make" else get_nmake_data(ctx)
 
     tools_deps = ctx.attr.tools_deps + make_data.deps
 
@@ -49,9 +49,16 @@ def _configure_make(ctx):
         create_configure_script = _create_configure_script,
         postfix_script = copy_results + "\n" + ctx.attr.postfix_script,
         tools_deps = tools_deps,
+        nmake = tool_name == "nmake",
         make_path = make_data.path,
     )
-    return cc_external_rule_impl(ctx, attrs)
+    return cc_external_rule_impl(ctx, attrs)    
+
+def _configure_gnumake(ctx):
+    return _configure_make(ctx, "make")
+
+def _configure_nmake(ctx):
+    return _configure_make(ctx, "nmake")
 
 def _create_configure_script(configureParameters):
     ctx = configureParameters.ctx
@@ -79,14 +86,12 @@ def _create_configure_script(configureParameters):
     prefix = "{} ".format(ctx.expand_location(attrs.tool_prefix, data)) if attrs.tool_prefix else ""
     configure_prefix = "{} ".format(ctx.expand_location(ctx.attr.configure_prefix, data)) if ctx.attr.configure_prefix else ""
 
-    is_nmake = True if "nmake" in attrs.make_path else False
-
     for target in ctx.attr.targets:
         # Configure will have generated sources into `$BUILD_TMPDIR` so make sure we `cd` there
         make_commands.append("{prefix}{make} {flags} {target} {args}".format(
             prefix = prefix,
             make = attrs.make_path,
-            flags = "-F $$BUILD_TMPDIR$$/makefile" if is_nmake else "-C $$BUILD_TMPDIR$$",
+            flags = "-F $$BUILD_TMPDIR$$/makefile" if attrs.nmake else "-C $$BUILD_TMPDIR$$",
             args = args,
             target = target,
         ))
@@ -223,9 +228,31 @@ configure_make = rule(
     attrs = _attrs(),
     fragments = CC_EXTERNAL_RULE_FRAGMENTS,
     output_to_genfiles = True,
-    implementation = _configure_make,
+    implementation = _configure_gnumake,
     toolchains = [
         "@rules_foreign_cc//toolchains:make_toolchain",
+        "@rules_foreign_cc//foreign_cc/private/framework:shell_toolchain",
+        "@bazel_tools//tools/cpp:toolchain_type",
+    ],
+    # TODO: Remove once https://github.com/bazelbuild/bazel/issues/11584 is closed and the min supported
+    # version is updated to a release of Bazel containing the new default for this setting.
+    incompatible_use_toolchain_transition = True,
+)
+
+configure_nmake = rule(
+    doc = (
+        "Rule for building external libraries with configure-make pattern. " +
+        "Some 'configure' script is invoked with --prefix=install (by default), " +
+        "and other parameters for compilation and linking, taken from Bazel C/C++ " +
+        "toolchain and passed dependencies. " +
+        "After configuration, MSVCs nmake is called."
+    ),
+    attrs = _attrs(),
+    fragments = CC_EXTERNAL_RULE_FRAGMENTS,
+    output_to_genfiles = True,
+    implementation = _configure_nmake,
+    toolchains = [
+        "@rules_foreign_cc//toolchains:nmake_toolchain",
         "@rules_foreign_cc//foreign_cc/private/framework:shell_toolchain",
         "@bazel_tools//tools/cpp:toolchain_type",
     ],
