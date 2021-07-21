@@ -79,14 +79,14 @@ def _create_configure_script(configureParameters):
     prefix = "{} ".format(ctx.expand_location(attrs.tool_prefix, data)) if attrs.tool_prefix else ""
     configure_prefix = "{} ".format(ctx.expand_location(ctx.attr.configure_prefix, data)) if ctx.attr.configure_prefix else ""
 
-    make_path = "nmake.exe" if ctx.attr.nmake else attrs.make_path
+    is_nmake = True if "nmake" in attrs.make_path else False
 
     for target in ctx.attr.targets:
         # Configure will have generated sources into `$BUILD_TMPDIR` so make sure we `cd` there
         make_commands.append("{prefix}{make} {flags} {target} {args}".format(
             prefix = prefix,
-            make = make_path,
-            flags = "-F $$BUILD_TMPDIR$$/makefile" if ctx.attr.nmake else "-C $$BUILD_TMPDIR$$",
+            make = attrs.make_path,
+            flags = "-F $$BUILD_TMPDIR$$/makefile" if is_nmake else "-C $$BUILD_TMPDIR$$",
             args = args,
             target = target,
         ))
@@ -114,7 +114,7 @@ def _create_configure_script(configureParameters):
         autogen_command = ctx.attr.autogen_command,
         autogen_options = ctx.attr.autogen_options,
         make_commands = make_commands,
-        make_path = make_path,
+        make_path = attrs.make_path,
     )
     return define_install_prefix + configure
 
@@ -199,13 +199,6 @@ def _attrs():
                 "Passed to the 'configure' script with --prefix flag."
             ),
             mandatory = False,
-        ),
-        "nmake": attr.bool(
-            doc = (
-                "Set to True if nmake (provided by the MSVC suite) should be used instead of GNU Make."
-            ),
-            mandatory = False,
-            default = False,
         ),
         "targets": attr.string_list(
             doc = (
