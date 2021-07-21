@@ -38,6 +38,10 @@ def create_configure_script(
         root_path = "$$BUILD_TMPDIR$$"
         configure_path = "{}/{}".format(root_path, configure_command)
 
+    # TODO, try wrapping in single quotes, although probably wont work as $EXT_BUILD_ROOT wont be expanded.
+    # Instead, change the pwd of windows_commands to pipe into "sed" to convert backslashes to forward slashes
+    # https://stackoverflow.com/a/28077818
+    # https://stackoverflow.com/a/12063651
     #script.append("##export_var## MAKE {}".format(make_path))
     script.append("##enable_tracing##")
 
