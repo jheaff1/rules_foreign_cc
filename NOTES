@@ -1,0 +1,5 @@
+add patch file to change include/apr.hw so that __WIN32_WINNT is set to 0x0600. The fix to this is described at https://apachelounge.com/viewtopic.php?t=8260
+
+Build commands are:
+nmake -F Makefile.win PREFIX=~/apr-install ARCH="x64 Release" buildall
+nmake -F Makefile.win PREFIX=~/apr-install ARCH="x64 Release" install
