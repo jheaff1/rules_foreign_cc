@@ -27,7 +27,7 @@ def _make(ctx):
 
     attrs = create_attrs(
         ctx.attr,
-        configure_name = "GNUMake",
+        configure_name = "Make",
         create_configure_script = _create_make_script,
         tools_deps = tools_deps,
         make_path = make_data.path,
@@ -55,7 +55,7 @@ def _create_make_script(configureParameters):
     make_commands = []
     prefix = "{} ".format(expand_locations(attrs.tool_prefix, data)) if attrs.tool_prefix else ""
     for target in ctx.attr.targets:
-        make_commands.append("{prefix}{make} -C $$EXT_BUILD_ROOT$$/{root} {target} {args}".format(
+        make_commands.append("{prefix}{make} {target} {args}".format(
             prefix = prefix,
             make = attrs.make_path,
             root = root,

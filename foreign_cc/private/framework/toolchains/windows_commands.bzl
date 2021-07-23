@@ -67,7 +67,9 @@ if [ -d "$1" ]; then
   SAVEIFS=$IFS
   IFS=$'\n'
   # Find all real files. Symlinks are assumed to be relative to something within the directory we're seaching and thus ignored
+  echo "DEBUG: about to find $1"
   local files=$($REAL_FIND -P $1 -type f  \\( -type f -and \\( -name "*.pc" -or -name "*.la" -or -name "*-config" -or -name "*.mk" -or -name "*.cmake" \\) \\))
+  echo "DEBUG: after find"
   IFS=$SAVEIFS
   # Escape any backslashes so sed can understand what it's supposed to replace
   local argv2=$(echo "$2" | sed 's/\\\\/\\\\\\\\/g')
@@ -112,7 +114,9 @@ elif [[ -L "$1" ]]; then
 elif [[ -d "$1" ]]; then
   SAVEIFS=$IFS
   IFS=$'\n'
+  echo "DEBUG: before symlink find"
   local children=($($REAL_FIND -H "$1" -maxdepth 1 -mindepth 1))
+  echo "DEBUG: after symlink find"
   IFS=$SAVEIFS
   for child in "${children[@]}"; do
     ##symlink_to_dir## "$child" "$target"
@@ -148,7 +152,9 @@ elif [[ -L "$1" ]]; then
 elif [[ -d "$1" ]]; then
   SAVEIFS=$IFS
   IFS=$'\n'
+  echo "DEBUG: before symlink_to_dir find"
   local children=($($REAL_FIND -H "$1" -maxdepth 1 -mindepth 1))
+  echo "DEBUG: after symlink_to_dir find"
   IFS=$SAVEIFS
   local dirname=$(basename "$1")
   for child in "${children[@]}"; do
@@ -177,7 +183,9 @@ export SYSTEMDRIVE="C:"
 
 def increment_pkg_config_path(source):
     text = """\
+echo "DEBUG: before pkg find"
 local children=$($REAL_FIND $1 -mindepth 1 -name '*.pc')
+echo "DEBUG: after pkg find"
 # assume there is only one directory with pkg config
 for child in $children; do
   export PKG_CONFIG_PATH="$${PKG_CONFIG_PATH:-}$$:$(dirname $child)"
@@ -209,7 +217,9 @@ def cleanup_function(on_success, on_failure):
 def children_to_path(dir_):
     text = """\
 if [ -d {dir_} ]; then
+  echo "DEBUG: before children find"
   local tools=$($REAL_FIND $EXT_BUILD_DEPS/bin -maxdepth 1 -mindepth 1)
+  echo "DEBUG: after children find"
   for tool in $tools;
   do
     if  [[ -d \"$tool\" ]] || [[ -L \"$tool\" ]]; then
