@@ -1,6 +1,5 @@
-"""Helper rules and macros for building projects using the MSVC nmake build tool"""
+"""This file contains rules for configuration transitions"""
 
-load(":configure.bzl", "configure_make")
 load("//foreign_cc:providers.bzl", "ForeignCcDepsInfo")
 
 def _extra_toolchains_transition_impl(settings, attrs):
@@ -13,7 +12,6 @@ _extra_toolchains_transition = transition(
 )
 
 def _extra_toolchains_transitioned_foreign_cc_target_impl(ctx):
-
     # Return the providers from the transitioned foreign_cc target
     return [
         ctx.attr.target[DefaultInfo],
@@ -42,17 +40,3 @@ extra_toolchains_transitioned_foreign_cc_target = rule(
     },
     incompatible_use_toolchain_transition = True,
 )
-
-def configure_nmake(name, **kwargs):
-    """ Wrapper macro around configure_make to force usage of the preinstalled nmake toolchain """
-    configure_make_target_name = name + "_nmake"
-
-    configure_make(
-        name = configure_make_target_name,
-        **kwargs
-    )
-    extra_toolchains_transitioned_foreign_cc_target(
-        name = name,
-        extra_toolchains = ["@rules_foreign_cc//toolchains:preinstalled_nmake_toolchain"],
-        target = configure_make_target_name,
-    )
