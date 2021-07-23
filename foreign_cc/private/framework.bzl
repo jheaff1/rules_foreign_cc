@@ -297,7 +297,6 @@ def get_env_prelude(ctx, lib_name, data_dependencies, target_root):
 
     # Add all environment variables from the cc_toolchain
     cc_env = _correct_path_variable(get_env_vars(ctx))
-    #print("cc_env is ", cc_env)
     env.update(cc_env)
 
     # Add all user defined variables
@@ -610,7 +609,7 @@ def _correct_path_variable(env):
     value = env.get("PATH", "").replace("C:\\", "/c/")
     value = value.replace("\\", "/")
     value = value.replace(";", ":")
-    env["PATH"] = value + ":$PATH"
+    env["PATH"] = "$PATH:" + value
     return env
 
 def _depset(item):
