@@ -2,8 +2,7 @@
 https://github.com/bazelbuild/rules_foreign_cc/issues/337
 """
 
-load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
-load("@rules_foreign_cc//foreign_cc:defs.bzl", "make_variant")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make", "configure_make_variant")
 
 # Read https://wiki.openssl.org/index.php/Compilation_and_Installation
 
@@ -35,9 +34,8 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-make_variant(
+configure_make_variant(
     name = "openssl_msvc",
-    rule = configure_make,
     toolchain = "@rules_foreign_cc//toolchains:preinstalled_nmake_toolchain", 
     build_data = [
         "@nasm//:nasm",

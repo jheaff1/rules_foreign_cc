@@ -148,6 +148,7 @@ load(
     "//foreign_cc/private/framework:platform.bzl",
     "os_name",
 )
+load("//foreign_cc/private:transitions.bzl", "make_variant")
 load(
     "//toolchains/native_tools:tool_access.bzl",
     "get_cmake_data",
@@ -416,3 +417,18 @@ cmake = rule(
     # version is updated to a release of Bazel containing the new default for this setting.
     incompatible_use_toolchain_transition = True,
 )
+
+def cmake_variant(name, toolchain, **kwargs):
+    """ Wrapper macro around the cmake() rule to force usage of the given make variant toolchain.
+
+    Args:
+        name: The target name
+        toolchain: The desired make variant toolchain to use, e.g. @rules_foreign_cc//toolchains:preinstalled_nmake_toolchain
+        **kwargs: Remaining keyword arguments
+    """
+    make_variant(
+        name = name,
+        rule = cmake,
+        toolchain = toolchain,
+        **kwargs,
+    )
